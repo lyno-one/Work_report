@@ -1,0 +1,22 @@
+{
+  "name": "lyno-report",
+  "private": true,
+  "workspaces": [
+    "apps/api",
+    "apps/web"
+  ],
+  "scripts": {
+    "dev": "concurrently -k -n API,WEB -c green,blue \"npm:dev:api\" \"npm:dev:web\"",
+    "dev:api": "npm run start:dev --workspace @lyno/report-api",
+    "dev:web": "npm run dev --workspace @lyno/report-web",
+    "build": "npm run build --workspace @lyno/report-api && npm run build --workspace @lyno/report-web",
+    "typecheck": "npm run typecheck --workspace @lyno/report-api && npm run typecheck --workspace @lyno/report-web",
+    "test:uat": "npm run build --workspace @lyno/report-api && node scripts/uat.mjs",
+    "backup": "node scripts/backup.mjs",
+    "test:browser": "node scripts/browser-smoke.mjs",
+    "test:crm": "npm run build --workspace @lyno/report-api && node scripts/crm-uat.mjs"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
