@@ -73,6 +73,11 @@ try{
  assert.equal(await evaluate('document.querySelector(".leaderboard-table tbody tr td:nth-child(4)").textContent'),"100");
  await screenshot("leaderboard-desktop.png");
  await command("Emulation.setDeviceMetricsOverride",{width:390,height:844,deviceScaleFactor:1,mobile:true});
+ await evaluate('document.querySelector(".mobile-nav-toggle").click()');
+ await until('document.querySelector(".sidebar").classList.contains("open")');
+ assert.equal(await evaluate('document.querySelector(".mobile-nav-toggle").getAttribute("aria-expanded")'),"true");
+ await evaluate('document.querySelector(".mobile-backdrop").click()');
+ await until('!document.querySelector(".sidebar").classList.contains("open")');
  assert.equal(await evaluate('document.documentElement.scrollWidth<=innerWidth'),true,"leaderboard mobile overflow");
  await screenshot("leaderboard-mobile.png");
  await command("Emulation.setDeviceMetricsOverride",{width:1366,height:900,deviceScaleFactor:1,mobile:false});

@@ -548,10 +548,17 @@ export default function DailyWorkspace({
               ["CHẬM / QUÁ HẠN", overview.late],
             ].map(([label, value]) => (
               <article className="metric-card" key={label}>
-                <span className="metric-label">{label}</span>
+                <div className="metric-top"><span className="metric-label">{label}</span><span className="metric-glyph" aria-hidden="true">{label === "ĐÃ NỘP / NHÂN SỰ" ? "▤" : label === "TỔNG ĐẦU VIỆC" ? "▦" : label === "TỶ LỆ HOÀN THÀNH" ? "✓" : "!"}</span></div>
                 <strong className="metric-value">{value}</strong>
+                <span className="metric-note">{label === "ĐÃ NỘP / NHÂN SỰ" ? "Báo cáo đã gửi trong ngày" : label === "TỔNG ĐẦU VIỆC" ? "Công việc trong phạm vi đang xem" : label === "TỶ LỆ HOÀN THÀNH" ? `${overview.done} công việc hoàn thành` : "Cần theo dõi và hỗ trợ kịp thời"}</span>
               </article>
             ))}
+          </div>
+          <div className="dashboard-charts">
+            <section className="panel chart-panel"><div className="panel-heading"><h2>Hiệu suất phòng ban</h2><span className="subtle">Tỷ lệ hoàn thành công việc</span></div>
+              {overview.departments.length ? <div className="chart-bars">{overview.departments.map(d => <div className="bar-col" key={d.id}><strong>{d.completion.toFixed(0)}%</strong><div className="chart-bar" style={{height: `${Math.max(0, Math.min(100, d.completion)) * 1.5}px`}} /><span>{d.name}</span></div>)}</div> : <p className="empty-chart">Chưa có dữ liệu phòng ban trong ngày.</p>}
+            </section>
+            <section className="panel chart-panel"><div className="panel-heading"><h2>Trạng thái công việc</h2><span className="subtle">{overview.totalTasks} đầu việc</span></div><div className="donut-wrap"><div className="donut" role="img" aria-label={`Hoàn thành ${overview.done}, đang làm ${overview.inProgress}, chậm hoặc quá hạn ${overview.late}`} style={{background: overview.totalTasks ? `conic-gradient(#189b69 0 ${overview.done / overview.totalTasks * 100}%, #3278db ${overview.done / overview.totalTasks * 100}% ${(overview.done + overview.inProgress) / overview.totalTasks * 100}%, #d84d60 ${(overview.done + overview.inProgress) / overview.totalTasks * 100}% 100%)` : '#ecf1f6'}}><div className="donut-center"><strong>{overview.completion.toFixed(0)}%</strong><small>Hoàn thành</small></div></div><div className="chart-legend">{[["Hoàn thành", overview.done, "#189b69"], ["Đang làm", overview.inProgress, "#3278db"], ["Chậm / quá hạn", overview.late, "#d84d60"]].map(([label, value, color]) => <div key={label}><span><i style={{background: String(color)}} />{label}</span><b>{value}</b></div>)}</div></div></section>
           </div>
       {mode==="overview"&&["manager","ceo","admin"].includes(user.role)&&<section className="panel daily-panel">
         <h2>Nội dung công việc và tiến độ nhân viên</h2>
@@ -567,14 +574,7 @@ export default function DailyWorkspace({
       </section>}
           <div className="content-grid">
             <section className="panel daily-panel">
-              <h2>Hiệu suất phòng ban</h2>
-              {overview.departments.map((d) => (
-                <div className="daily-progress" key={d.id}>
-                  <span>{d.name}</span>
-                  <progress max="100" value={d.completion} />
-                  <b>{d.completion.toFixed(0)}%</b>
-                </div>
-              ))}
+              <h2>Kết quả & đánh giá trong ngày</h2>
               <p>
                 Hoàn thành: {overview.done} · Đang làm: {overview.inProgress} ·
                 Chậm/quá hạn: {overview.late}

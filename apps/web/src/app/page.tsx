@@ -7,7 +7,7 @@ import {
   Building2,
   CalendarDays,
   Check,
-  ChevronDown,
+  Menu,
   CircleHelp,
   ClipboardList,
   LayoutDashboard,
@@ -61,8 +61,8 @@ type Permission = {
 const roleName: Record<Role, string> = {
   admin: "Admin",
   ceo: "CEO",
-  manager: "Manager",
-  employee: "Employee",
+  manager: "Trưởng phòng",
+  employee: "Nhân sự",
 };
 async function request<T>(path: string, token: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${API}${path}`, {
@@ -89,6 +89,7 @@ function App() {
   const [crmEnabled,setCrmEnabled]=useState(false);
   const [loginError, setLoginError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [page, setPage] = useState<"overview" | "reports" | "permissions" | "department" | "leaderboard">("overview");
   const [reports, setReports] = useState<Report[]>([]);
   const [users, setUsers] = useState<User[]>([]);
@@ -232,11 +233,11 @@ function App() {
 
   return (
     <main className="app-shell">
-      <aside className="sidebar">
-        <a className="brand-lockup sidebar-brand" href="#"><span className="brand-mark">L</span><span>LYNO<span className="brand-dot">.</span></span></a>
-        <div className="workspace-switch"><span className="workspace-icon">TK</span><span><strong>Thiên Khuê S</strong><small>Workspace nội bộ</small></span><ChevronDown size={15} /></div>
-        <span className="nav-label">KHÔNG GIAN LÀM VIỆC</span>
-        <nav className="side-nav" aria-label="Điều hướng chính">
+      {menuOpen && <button className="mobile-backdrop" aria-label="Đóng menu" onClick={() => setMenuOpen(false)} />}
+      <aside className={`sidebar ${menuOpen ? "open" : ""}`}>
+        <a className="sidebar-brand" href="#"><strong>LYNO</strong><small>THIÊN KHUÊ GROUP</small></a>
+        <span className="nav-label">HỆ ĐIỀU HÀNH</span>
+        <nav className="side-nav" aria-label="Điều hướng chính" onClick={() => setMenuOpen(false)}>
           <button className={page === "overview" ? "active" : ""} onClick={() => setPage("overview")}><LayoutDashboard size={17} />Tổng quan</button>
           <button className={page === "reports" ? "active" : ""} onClick={() => setPage("reports")}><ClipboardList size={17} />Báo cáo công việc{canReview && pendingCount > 0 && <span className="nav-count">{pendingCount}</span>}</button>
           {user.role !== "employee" && <button className={page === "department" ? "active" : ""} onClick={() => setPage("department")}><Building2 size={17} />Tổng hợp phòng ban</button>}
@@ -245,6 +246,7 @@ function App() {
           {isAdmin && <button className="sub-nav" onClick={() => setPage("permissions")}><Users size={16} />Quản lý vai trò</button>}
         </nav>
         <div className="sidebar-bottom">
+          <div className="side-motto"><b>ĐÚNG NGƯỜI • ĐÚNG VIỆC</b><p>Đo kết quả thật<br />Ghi nhận trách nhiệm<br />Phát triển năng lực</p></div>
           <SupportCenter key={user.id} token={token} role={user.role} />
           <div className="current-user">
             <span className={`avatar avatar-${user.role}`}>{user.name.split(" ").slice(-1)[0].slice(0, 1)}</span>
@@ -256,7 +258,8 @@ function App() {
 
       <section className="main-area">
         <header className="topbar">
-          <div className="breadcrumb"><span>LYNO</span><span className="crumb-slash">/</span><strong>{selectedTitle}</strong></div>
+          <button className="mobile-nav-toggle icon-button" aria-label="Mở menu" aria-expanded={menuOpen} onClick={() => setMenuOpen(!menuOpen)}><Menu size={21} /></button>
+          <div className="system-heading"><span className="eyebrow">LYNO OS × THIÊN KHUÊ S</span><h2>HỆ THỐNG BÁO CÁO CÔNG VIỆC</h2><p>Minh bạch công việc · Đo lường kết quả · Hành động kịp thời</p></div>
           <div className="topbar-right">
             <span className="today-chip"><CalendarDays size={15} /> {new Intl.DateTimeFormat("vi-VN", { weekday: "short", day: "2-digit", month: "2-digit", timeZone: "Asia/Ho_Chi_Minh" }).format(new Date())}</span>
             <span className={`role-chip role-chip-${user.role}`}><span />{roleName[user.role]}</span>
@@ -299,6 +302,7 @@ function App() {
               )}
             </div>
           )}
+          <footer className="workspace-footer">LYNO • THIÊN KHUÊ | Minh bạch công việc · Ghi nhận kết quả</footer>
         </div>
       </section>
     </main>
