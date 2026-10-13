@@ -1,0 +1,9 @@
+report.lyno.com.vn {
+    encode zstd gzip
+    handle /api/* {
+        reverse_proxy 127.0.0.1:3510
+    }
+    handle {
+        reverse_proxy 127.0.0.1:3500
+    }
+}
