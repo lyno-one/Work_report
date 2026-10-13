@@ -514,7 +514,7 @@ export default function DailyWorkspace({
         >
           Xuất JSON
         </button>
-        {!["admin", "ceo"].includes(user.role) && (
+        {user.role !== "ceo" && (
           <button
             className="button button-primary"
             disabled={busy||loading}

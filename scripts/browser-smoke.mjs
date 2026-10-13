@@ -46,7 +46,10 @@ try{
  await login("admin@lyno.demo");
  assert.equal(await evaluate('Array.from(document.querySelectorAll("nav button")).some(b=>b.textContent.includes("Phân quyền")||b.textContent.includes("Quản lý vai trò"))'),false,"demo admin must not see permission module");
  assert.equal(await evaluate('document.documentElement.scrollWidth<=innerWidth'),true,"desktop overflow");
- assert.equal(await evaluate('Array.from(document.querySelectorAll("button")).some(b=>b.textContent==="Tạo báo cáo")'),false,"admin must not create without delegation");
+ assert.equal(await evaluate('Array.from(document.querySelectorAll("button")).some(b=>b.textContent==="Tạo báo cáo")'),true,"admin can create their own report");
+ await evaluate('Array.from(document.querySelectorAll("button")).find(b=>b.textContent==="Tạo báo cáo").click()');
+ await until('!!document.querySelector(".daily-modal")');
+ await evaluate('Array.from(document.querySelectorAll(".daily-modal button")).find(b=>b.textContent==="Đóng").click()');
  await until('!!document.querySelector(".employee-task-card")');
  assert.equal(await evaluate('document.querySelector(".employee-task-card progress").value'),50);
  assert.equal(await evaluate('document.querySelector(".employee-work-content p").textContent'),"Employee entered work content at 50%.");

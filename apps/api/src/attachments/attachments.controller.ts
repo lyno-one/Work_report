@@ -11,7 +11,7 @@ import { AttachmentsService } from "./attachments.service";
 @UseGuards(BearerAuthGuard,RolesGuard)
 export class AttachmentsController {
  constructor(private readonly files:AttachmentsService,private readonly reports:ReportsService){}
- @Post() @Roles("employee","manager")
+ @Post() @Roles("employee","manager","admin")
  @UseInterceptors(FileInterceptor("file",{limits:{fileSize:5*1024*1024,files:1,fields:0}}))
  upload(@Req() req:AuthenticatedRequest,@UploadedFile() file:{originalname:string;mimetype:string;buffer:Buffer;size:number}){return this.files.upload(req.user,file);}
  private accessible(id:string,req:AuthenticatedRequest){

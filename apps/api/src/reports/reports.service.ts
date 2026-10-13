@@ -99,7 +99,7 @@ export class ReportsService {
   this.storage.commit("reports",next,actor.id,report.id,action,before,report); this.reports=next; return structuredClone(report);
  }
  create(user: DemoUser,input: CreateReportDto): WorkReport {
-  if(["admin","ceo"].includes(user.role)) throw new ForbiddenException("Chưa có ủy quyền tạo báo cáo");
+  if(user.role === "ceo") throw new ForbiddenException("Chưa có ủy quyền tạo báo cáo");
   this.validate(input,user.departmentId);
   this.crm.validateReferences(user,input.tasks,input.date);this.attachments.validate(user,input.tasks);
   if(this.reports.some(r => r.authorId === user.id && r.date === input.date)) throw new ConflictException("Bạn đã có báo cáo ngày này. Hãy mở bản hiện có để sửa.");
@@ -159,7 +159,7 @@ export class ReportsService {
  definitions(user: DemoUser) { return this.catalog.all().filter(d => ["admin","ceo"].includes(user.role) || d.departmentId === user.departmentId); }
  overview(user: DemoUser,date?: string,departmentId?: string,search?: string) {
   const reports=this.listFor(user,date,departmentId,search); const tasks=reports.flatMap(r => r.tasks);
-  const people=this.users.list().filter(u => u.active && !["admin","ceo"].includes(u.role) && (["admin","ceo"].includes(user.role) || user.role === "manager" && u.departmentId === user.departmentId || u.id === user.id) && (!departmentId || u.departmentId === departmentId) && (!search || `${u.name} ${u.employeeCode??""}`.toLocaleLowerCase("vi").includes(search.toLocaleLowerCase("vi"))));
+  const people=this.users.list().filter(u => u.active && u.role !== "ceo" && (["admin","ceo"].includes(user.role) || user.role === "manager" && u.departmentId === user.departmentId || u.id === user.id) && (!departmentId || u.departmentId === departmentId) && (!search || `${u.name} ${u.employeeCode??""}`.toLocaleLowerCase("vi").includes(search.toLocaleLowerCase("vi"))));
   const done=tasks.filter(t => t.status === "done").length;
   const approved=reports.filter(r => r.status === "approved");
   return { people:people.map(u=>({id:u.id,name:u.name,employeeCode:u.employeeCode,jobTitle:u.jobTitle,department:u.department})),reports:reports.length,submitted:reports.filter(r => ["submitted","approved"].includes(r.status)).length,totalPeople:people.length,totalTasks:tasks.length,done,inProgress:tasks.filter(t => t.status === "in_progress").length,late:tasks.filter(t => ["late","overdue"].includes(t.status)).length,completion:tasks.length ? done/tasks.length*100 : 0,averageScore:approved.length ? approved.reduce((a,r)=>a+(r.score ?? 0),0)/approved.length : null,scoreSamples:approved.length,
@@ -174,7 +174,7 @@ export class ReportsService {
   const year=Number(selected.slice(0,4));
   const approved=this.reports.filter(r=>r.status==="approved"&&r.score!==null&&Number.isFinite(r.score)&&r.date.slice(0,4)===String(year));
   const departments=new Map<string,string>();
-  for(const u of this.users.list())if(u.active&&!["admin","ceo"].includes(u.role))departments.set(u.departmentId,u.department);
+  for(const u of this.users.list())if(u.active&&u.role!=="ceo")departments.set(u.departmentId,u.department);
   for(const r of approved)departments.set(r.departmentId,r.department);
   if(departmentId&&!departments.has(departmentId))throw new BadRequestException("Phòng ban không tồn tại.");
   type Entry={userId:string;name:string;departmentId:string;department:string;monthScore:number;yearScore:number;monthReports:number;yearReports:number};

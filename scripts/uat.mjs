@@ -40,7 +40,13 @@ try{
  await api("/reports",employee,"POST",{...payload,date:"2026-02-30"},400);
  await api("/reports",employee,"POST",{...payload,tomorrowPlan:"A\nB\nC\nD"},400);
  await api("/reports",employee,"POST",{...payload,kpis:[{code:"revenue",target:1,actual:2}]},400);
- await api("/reports",admin,"POST",payload,403);
+ const adminDraft=await api("/reports",admin,"POST",{...payload,date:"2026-09-30",tasks:[{...task,dueDate:"2026-09-30"}],kpis:[]},201);
+ assert.equal(adminDraft.authorId,"usr-admin");
+ await api("/reports",admin,"POST",{...payload,date:"2026-09-30",kpis:[]},409);
+ await api("/reports",admin,"POST",{...payload,authorId:"usr-employee",kpis:[]},400);
+ const adminSubmitted=await api(`/reports/${adminDraft.id}/submit`,admin,"POST",{version:adminDraft.version},201);
+ await api(`/reports/${adminDraft.id}/approve`,admin,"POST",{version:adminSubmitted.version,result:40,responsibility:30,competency:20,improvement:10,comment:"Self review"},403);
+ await api("/reports",ceo,"POST",{...payload,kpis:[]},403);
  const created=await api("/reports",employee,"POST",{...payload,tasks:[task,task,task]},201);
  assert.equal(created.status,"draft");assert.equal(created.kpis[0].resultPercent,null);assert.equal(created.tasks.length,3);
  await api("/reports",employee,"POST",payload,409);
@@ -50,7 +56,8 @@ try{
   const r=await fetch(base+"/attachments",{method:"POST",headers:token?{Authorization:"Bearer "+token}:{},body:form});const data=await r.json();assert.equal(r.status,expected,JSON.stringify(data));checks++;return data;
  }
  await upload(null,"proof.txt","Evidence","text/plain",401);
- await upload(admin,"proof.txt","Evidence","text/plain",403);
+ const adminFile=await upload(admin,"proof.txt","Evidence","text/plain");
+ await api(`/attachments/${adminFile.id}/info`,employee,"GET",undefined,403);
  await upload(employee,"proof.exe","Evidence","application/octet-stream",400);
  await upload(employee,"fake.png","not a PNG","image/png",400);
  await upload(employee,"big.txt","x".repeat(5*1024*1024+1),"text/plain",413);
